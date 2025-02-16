@@ -64,14 +64,15 @@ if(settings?.highDpi === 'on'){
     app.commandLine.appendSwitch('force-device-scale-factor', '1');
 }
 
-// 即将退出
-app.on('before-quit', () => {
-    if (mainWindow && !mainWindow.isMaximized()) {
-        const windowBounds = mainWindow.getBounds();
-        store.set('windowState', windowBounds);
-    }
-    stopApiServer();
-});
+// 移除原有的 before - quit 事件监听器
+// app.on('before-quit', () => {
+//     if (mainWindow && !mainWindow.isMaximized()) {
+//         const windowBounds = mainWindow.getBounds();
+//         store.set('windowState', windowBounds);
+//     }
+//     stopApiServer();
+// });
+
 // 关闭所有窗口
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -128,8 +129,15 @@ ipcMain.on('window-control', (event, action) => {
 });
 
 app.on('will-quit', () => {
+    // 将原 before - quit 事件监听器的逻辑移到这里
+    if (mainWindow && !mainWindow.isMaximized()) {
+        const windowBounds = mainWindow.getBounds();
+        store.set('windowState', windowBounds);
+    }
+    stopApiServer();
     globalShortcut.unregisterAll();
 });
+
 ipcMain.on('save-settings', (event, settings) => {
     store.set('settings', settings);
 });

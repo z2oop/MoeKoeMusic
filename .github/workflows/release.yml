@@ -1,10 +1,6 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
-    if: contains(github.event.head_commit.message, '[release]')
   workflow_dispatch:
 
 permissions:
@@ -37,88 +33,6 @@ jobs:
           fi
           NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
           echo "::set-output name=NEW_VERSION::$NEW_VERSION"
-
-  # Windows 端打包并上传到 GitHub Release
-  build-windows:
-    name: Build for Windows
-    runs-on: windows-latest
-    needs: increment-version
-    timeout-minutes: 30
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm run install-all
-
-      - name: Run common build
-        run: npm run build
-
-      - name: Run Windows build
-        run: npm run electron:build:win
-
-      - name: Rename Windows artifact
-        run: |
-          mv "./dist_electron/MoeKoe Music.exe" "./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe"
-
-      - name: Upload Windows artifact to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.increment-version.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Release ${{ needs.increment-version.outputs.version }}"
-          body: ${{ env.COMMIT_MESSAGE }}
-          prerelease: false
-          files: "./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe"
-
-  # macOS 端打包并上传到 GitHub Release
-  build-macos:
-    name: Build for macOS
-    runs-on: macos-latest
-    needs: increment-version
-    timeout-minutes: 30
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm run install-all
-
-      - name: Run common build
-        run: npm run build
-
-      - name: Run macOS build
-        run: npm run electron:build:macos
-
-      - name: Rename macOS artifacts
-        run: |
-          mv "./dist_electron/MoeKoe Music.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg"
-          mv "./dist_electron/MoeKoe Music.zip" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64-mac.zip"
-      
-      - name: List files after renaming
-        run: ls -al ./dist_electron
-
-      - name: Upload macOS artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.increment-version.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Release ${{ needs.increment-version.outputs.version }}"
-          body: ${{ env.COMMIT_MESSAGE }}
-          prerelease: false
-          files: |
-            ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg
-            ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64-mac.zip
 
   # Linux 端打包并上传到 GitHub Release
   build-linux:
