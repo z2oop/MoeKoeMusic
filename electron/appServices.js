@@ -264,7 +264,13 @@ export function stopApiServer() {
         kill(apiProcess.pid);
         apiProcess = null;
     }
+    if (process.platform === 'linux') {
+        const apiPath = path.join(process.resourcesPath, '../api', 'app_linux');
+        exec(`ps -ef | grep '${apiPath}' | grep -v grep | awk '{print $2}' | xargs kill -9`
+        );
+    }
 }
+
 
 // 注册快捷键
 export function registerShortcut() {
