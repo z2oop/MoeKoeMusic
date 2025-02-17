@@ -126,18 +126,9 @@ app.on('will - quit', () => {
     stopApiServer();
     globalShortcut.unregisterAll();
     if (process.platform === 'linux') {
-        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`, (error, stdout, stderr) => {
-            if (error) {
-                log.error(`执行终止 app_linux 进程命令失败: ${error.message}`);
-                log.error(`标准错误输出: ${stderr}`);
-            } else {
-                log.info('成功执行终止 app_linux 进程命令');
-                log.info(`标准输出: ${stdout}`);
-            }
-        });
-    }
+        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`)
+        }
 });
-
 ipcMain.on('save - settings', (event, settings) => {
     store.set('settings', settings);
 });
