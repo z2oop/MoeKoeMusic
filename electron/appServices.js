@@ -264,10 +264,6 @@ export function stopApiServer() {
         kill(apiProcess.pid);
         apiProcess = null;
     }
-    if (process.platform === 'linux') {
-        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`
-        );
-    }
 }
 
 

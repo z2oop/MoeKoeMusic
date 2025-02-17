@@ -134,6 +134,10 @@ app.on('will-quit', () => {
     }
     stopApiServer();
     globalShortcut.unregisterAll();
+    if (process.platform === 'linux') {
+        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`
+        );
+    }
 });
 
 ipcMain.on('save-settings', (event, settings) => {
