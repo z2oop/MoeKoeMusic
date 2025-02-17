@@ -11,6 +11,8 @@ import { fileURLToPath } from 'url';
 let mainWindow = null;
 const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.on('ready', () => {
     startApiServer().then(() => {
         try {
             mainWindow = createWindow();
@@ -48,7 +50,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
             return;
         });
     });
-;
+});
 
 const settings = store.get('settings');
 if(settings?.gpuAcceleration === 'off'){
@@ -126,26 +128,24 @@ ipcMain.on('window-control', (event, action) => {
     }
 });
 
-app.on('will-quit', () => {
-    // 将原 before - quit 事件监听器的逻辑移到这里
-    if (mainWindow && !mainWindow.isMaximized()) {
-        const windowBounds = mainWindow.getBounds();
-        store.set('windowState', windowBounds);
-    }
+// app.on('will-quit', () => {
+//     // 将原 before - quit 事件监听器的逻辑移到这里
+//     // if (mainWindow && !mainWindow.isMaximized()) {
+//     //     const windowBounds = mainWindow.getBounds();
+//     //     store.set('windowState', windowBounds);
+//     // }
+//     console.log('====================')
+//     stopApiServer();
+//     globalShortcut.unregisterAll();
+// });
+
+app.on('before-quit', () => {
+ 
+    console.log('====================')
     stopApiServer();
     globalShortcut.unregisterAll();
-    if (process.platform === 'linux') {
-        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`, (error, stdout, stderr) => {
-            if (error) {
-                log.error(`执行终止 app_linux 进程命令失败: ${error.message}`);
-                log.error(`标准错误输出: ${stderr}`);
-            } else {
-                log.info('成功执行终止 app_linux 进程命令');
-                log.info(`标准输出: ${stdout}`);
-            }
-        });
-    }
-        });
+});
+
 ipcMain.on('save-settings', (event, settings) => {
     store.set('settings', settings);
 });

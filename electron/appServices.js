@@ -204,8 +204,8 @@ export function startApiServer() {
     return new Promise((resolve, reject) => {
         let apiPath = '';
         if (isDev) {
-            return resolve();
-            // apiPath = path.join(__dirname, '../api/app_api');
+            // return resolve();
+            apiPath = path.join(__dirname, '../api/bin/app_linux');
         } else {
             switch (process.platform) {
                 case 'win32':
@@ -260,6 +260,8 @@ export function startApiServer() {
 
 // 停止 API 服务器
 export function stopApiServer() {
+
+    console.log('++++++++++++++++++++++')
     if (apiProcess) {
         kill(apiProcess.pid);
         apiProcess = null;
