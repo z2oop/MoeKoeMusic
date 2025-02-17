@@ -4,83 +4,75 @@ import {
     stopApiServer, registerShortcut, 
     playStartupSound, createLyricsWindow, setThumbarButtons 
 } from './appServices.js';
-import Store from 'electron-store';
+import Store from 'electron - store';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
+import log from 'electron - log';
 
 let mainWindow = null;
 const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    startApiServer().then(() => {
-        try {
-            mainWindow = createWindow();
-            createTray(mainWindow);
-            playStartupSound();
-            registerShortcut();
-        } catch (error) {
-            console.log('初始化应用时发生错误:', error);
-            createTray(null);
-            dialog.showMessageBox({
-                type: 'error',
-                title: '错误',
-                message: '初始化应用时发生错误。',
-                buttons: ['确定']
-            }).then(result => {
-                if (result.response === 0) {
-                    app.isQuitting = true;
-                    app.quit();
-                }
-            });
-        }
-    }).catch((error) => {
-        console.log('API 服务启动失败:', error);
+startApiServer().then(() => {
+    try {
+        mainWindow = createWindow();
+        createTray(mainWindow);
+        playStartupSound();
+        registerShortcut();
+    } catch (error) {
+        console.log('初始化应用时发生错误:', error);
         createTray(null);
         dialog.showMessageBox({
             type: 'error',
             title: '错误',
-            message: 'API 服务启动失败，请检查！',
+            message: '初始化应用时发生错误。',
             buttons: ['确定']
         }).then(result => {
             if (result.response === 0) {
                 app.isQuitting = true;
                 app.quit();
             }
-            return;
         });
+    }
+}).catch((error) => {
+    console.log('API 服务启动失败:', error);
+    createTray(null);
+    dialog.showMessageBox({
+        type: 'error',
+        title: '错误',
+        message: 'API 服务启动失败，请检查！',
+        buttons: ['确定']
+    }).then(result => {
+        if (result.response === 0) {
+            app.isQuitting = true;
+            app.quit();
+        }
+        return;
     });
-;
+});
 
 const settings = store.get('settings');
-if(settings?.gpuAcceleration === 'off'){
+if (settings?.gpuAcceleration === 'off') {
     app.disableHardwareAcceleration();
-    app.commandLine.appendSwitch('enable-transparent-visuals');
-    app.commandLine.appendSwitch('disable-gpu-compositing');
+    app.commandLine.appendSwitch('enable - transparent - visuals');
+    app.commandLine.appendSwitch('disable - gpu - compositing');
 }
 
-if(settings?.highDpi === 'on'){
-    app.commandLine.appendSwitch('high-dpi-support', '1');
-    app.commandLine.appendSwitch('force-device-scale-factor', '1');
+if (settings?.highDpi === 'on') {
+    app.commandLine.appendSwitch('high - dpi - support', '1');
+    app.commandLine.appendSwitch('force - device - scale - factor', '1');
 }
-
-// 移除原有的 before - quit 事件监听器
-// app.on('before-quit', () => {
-//     if (mainWindow && !mainWindow.isMaximized()) {
-//         const windowBounds = mainWindow.getBounds();
-//         store.set('windowState', windowBounds);
-//     }
-//     stopApiServer();
-// });
 
 // 关闭所有窗口
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+app.on('window - all - closed', () => {
+    if (process.platform!== 'darwin') {
         app.isQuitting = true;
         app.quit(); // 非 macOS 系统上关闭所有窗口后退出应用
     }
 });
 // 图标被点击
 app.on('activate', () => {
-    if (mainWindow && !mainWindow.isVisible()) {
+    if (mainWindow &&!mainWindow.isVisible()) {
         mainWindow.show();
     } else if (!mainWindow) {
         mainWindow = createWindow();
@@ -93,7 +85,7 @@ process.on('uncaughtException', (error) => {
 });
 
 // 监听渲染进程发送的免责声明结果
-ipcMain.on('disclaimer-response', (event, accepted) => {
+ipcMain.on('disclaimer - response', (event, accepted) => {
     if (accepted) {
         store.set('disclaimerAccepted', true);
     } else {
@@ -101,20 +93,20 @@ ipcMain.on('disclaimer-response', (event, accepted) => {
     }
 });
 
-ipcMain.on('window-control', (event, action) => {
+ipcMain.on('window - control', (event, action) => {
     switch (action) {
         case 'close':
-            if(store.get('settings')?.minimizeToTray === 'off'){
+            if (store.get('settings')?.minimizeToTray === 'off') {
                 app.isQuitting = true;
                 app.quit();
-            }else{
+            } else {
                 mainWindow.close();
             }
             break;
-        case 'minimize':
+        case'minimize':
             mainWindow.minimize();
             break;
-        case 'maximize':
+        case'maximize':
             if (mainWindow.isMaximized()) {
                 mainWindow.unmaximize();
                 store.set('maximize', false);
@@ -126,47 +118,53 @@ ipcMain.on('window-control', (event, action) => {
     }
 });
 
-app.on('will-quit', () => {
-    // 将原 before - quit 事件监听器的逻辑移到这里
-    if (mainWindow && !mainWindow.isMaximized()) {
+app.on('will - quit', () => {
+    if (mainWindow &&!mainWindow.isMaximized()) {
         const windowBounds = mainWindow.getBounds();
         store.set('windowState', windowBounds);
     }
     stopApiServer();
     globalShortcut.unregisterAll();
     if (process.platform === 'linux') {
-        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`
-        );
+        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`, (error, stdout, stderr) => {
+            if (error) {
+                log.error(`执行终止 app_linux 进程命令失败: ${error.message}`);
+                log.error(`标准错误输出: ${stderr}`);
+            } else {
+                log.info('成功执行终止 app_linux 进程命令');
+                log.info(`标准输出: ${stdout}`);
+            }
+        });
     }
 });
 
-ipcMain.on('save-settings', (event, settings) => {
+ipcMain.on('save - settings', (event, settings) => {
     store.set('settings', settings);
 });
-ipcMain.on('custom-shortcut', (event) => {
+ipcMain.on('custom - shortcut', (event) => {
     registerShortcut();
 });
 
-ipcMain.on('lyrics-data', (event, data) => {
+ipcMain.on('lyrics - data', (event, data) => {
     const lyricsWindow = mainWindow.lyricsWindow;
     if (lyricsWindow) {
-        lyricsWindow.webContents.send('lyrics-data', data);
+        lyricsWindow.webContents.send('lyrics - data', data);
     }
 });
 
 // 监听桌面歌词操作
-ipcMain.on('desktop-lyrics-action', (event, action) => {
+ipcMain.on('desktop - lyrics - action', (event, action) => {
     switch (action) {
-        case 'previous-song':
-            mainWindow.webContents.send('play-previous-track');
+        case 'previous - song':
+            mainWindow.webContents.send('play - previous - track');
             break;
-        case 'next-song':
-            mainWindow.webContents.send('play-next-track');
+        case 'next - song':
+            mainWindow.webContents.send('play - next - track');
             break;
-        case 'toggle-play':
-            mainWindow.webContents.send('toggle-play-pause');
+        case 'toggle - play':
+            mainWindow.webContents.send('toggle - play - pause');
             break;
-        case 'close-lyrics':
+        case 'close - lyrics':
             const lyricsWindow = mainWindow.lyricsWindow;
             if (lyricsWindow) {
                 lyricsWindow.close();
@@ -177,30 +175,30 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
                 }).show();
             }
             break;
-        case 'display-lyrics':
+        case 'display - lyrics':
             createLyricsWindow();
             break;
     }
 });
 
-ipcMain.on('set-ignore-mouse-events', (event, ignore) => {
+ipcMain.on('set - ignore - mouse - events', (event, ignore) => {
     const lyricsWindow = mainWindow.lyricsWindow;
     if (lyricsWindow) {
         lyricsWindow.setIgnoreMouseEvents(ignore, { forward: true });
     }
 });
 
-ipcMain.on('window-drag', (event, { mouseX, mouseY }) => {
+ipcMain.on('window - drag', (event, { mouseX, mouseY }) => {
     const lyricsWindow = mainWindow.lyricsWindow;
     if (!lyricsWindow) return
     lyricsWindow.setPosition(mouseX, mouseY)
     store.set('lyricsWindowPosition', { x: mouseX, y: mouseY });
-})
+});
 
-ipcMain.on('play-pause-action',(event, playing) =>{
+ipcMain.on('play - pause - action', (event, playing) => {
     const lyricsWindow = mainWindow.lyricsWindow;
     if (lyricsWindow) {
-        lyricsWindow.webContents.send('playing-status', playing);
+        lyricsWindow.webContents.send('playing - status', playing);
     }
     setThumbarButtons(mainWindow, playing);
-})
+});
