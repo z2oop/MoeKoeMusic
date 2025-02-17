@@ -1,4 +1,4 @@
-import { app, ipcMain, globalShortcut, dialog, Notification } from 'electron';
+import { app, ipcMain, globalShortcut, dialog, Notification ,Tray, Menu } from 'electron';
 import { 
     createWindow, createTray, startApiServer, 
     stopApiServer, registerShortcut, 
@@ -13,6 +13,39 @@ const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.on('ready', () => {
+    const tray = new Tray(path.join(__dirname, '../build/icons/logo.png'));
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: '选项1',
+            click: () => {
+                console.log('点击了选项1');
+                // 在这里添加点击选项1后的逻辑
+            }
+        },
+        {
+            label: '选项2',
+            type: 'checkbox',
+            checked: false,
+            click: (menuItem) => {
+                console.log('选项2的状态已改变', menuItem.checked);
+                // 在这里添加选项2状态改变后的逻辑
+            }
+        },
+        {
+            label: '分隔线',
+            type: 'separator'
+        },
+        {
+            label: '退出',
+            click: () => {
+                app.isQuitting = true;
+                app.quit();
+            }
+        }
+    ]);
+
+    // 将右键菜单绑定到托盘图标
+    tray.setContextMenu(contextMenu);
     startApiServer().then(() => {
         try {
             mainWindow = createWindow();
