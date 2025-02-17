@@ -265,8 +265,7 @@ export function stopApiServer() {
         apiProcess = null;
     }
     if (process.platform === 'linux') {
-        const apiPath = path.join(process.resourcesPath, '../api', 'app_linux');
-        exec(`ps -ef | grep '${apiPath}' | grep -v grep | awk '{print $2}' | xargs kill -9`
+        exec(`ps -ef | grep '/opt/MoeKoe Music/api/app_linux' | grep -v grep | awk '{print $2}'|xargs kill -9`
         );
     }
 }
