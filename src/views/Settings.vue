@@ -138,7 +138,8 @@ const selectedSettings = ref({
     qualityCompatibility: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
     apiMode: { displayText: t('guan-bi'), value: 'off' },
-    touchBar: { displayText: t('guan-bi'), value: 'off' }
+    touchBar: { displayText: t('guan-bi'), value: 'off' },
+    autoStart: { displayText: '关闭', value: 'off' }
 });
 
 // 设置分区配置
@@ -228,6 +229,10 @@ const settingSections = computed(() => [
             {
                 key: 'minimizeToTray',
                 label: t('guan-bi-shi-minimize-to-tray')
+            },
+            {
+                key: 'autoStart',
+                label: '开机自启动'
             },
             {
                 key: 'apiMode',
@@ -393,6 +398,13 @@ const selectionTypeMap = {
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
+    },
+    autoStart: {
+        title: '开机自启动',
+        options: [
+            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('guan-bi'), value: 'off' }
+        ]
     }
 };
 
@@ -420,7 +432,7 @@ const openSelection = (type) => {
 };
 
 const selectOption = (option) => {
-    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar'];
+    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
         return;
@@ -459,7 +471,7 @@ const selectOption = (option) => {
         'desktopLyrics': () => {
             const action = option.value === 'on' ? 'display-lyrics' : 'close-lyrics';
             window.electron.ipcRenderer.send('desktop-lyrics-action', action);
-        },
+        }
     };
     actions[selectionType.value]?.();
     saveSettings();
