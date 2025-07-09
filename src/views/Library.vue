@@ -251,19 +251,35 @@ const getplaylist = async () => {
             t: localStorage.getItem('t')
         });
         if (playlistResponse.status === 1) {
-            userPlaylists.value = playlistResponse.data.info.filter(playlist => {
+            const sortedInfo = playlistResponse.data.info.sort((a, b) => {
+                if (a.sort !== b.sort) {
+                    return a.sort - b.sort;
+                }
+                return 0;
+            });
+
+            userPlaylists.value = sortedInfo.filter(playlist => {
                 if (playlist.name == '我喜欢') {
                     localStorage.setItem('like', playlist.listid);
                 }
                 return playlist.list_create_userid === user.value.userid || playlist.name === '我喜欢';
             }).sort((a, b) => a.name === '我喜欢' ? -1 : 1);
-            collectedPlaylists.value = playlistResponse.data.info.filter(playlist => playlist.list_create_userid !== user.value.userid && !playlist.authors);
-            collectedAlbums.value = playlistResponse.data.info.filter(playlist => playlist.list_create_userid !== user.value.userid && playlist.authors);
+
+            collectedPlaylists.value = sortedInfo.filter(playlist => 
+                playlist.list_create_userid !== user.value.userid && !playlist.authors
+            );
+
+            collectedAlbums.value = sortedInfo.filter(playlist => 
+                playlist.list_create_userid !== user.value.userid && playlist.authors
+            );
             
             const collectedIds = [];
-            playlistResponse.data.info.forEach(playlist => {
+            sortedInfo.forEach(playlist => {
                 if (playlist.list_create_userid !== user.value.userid) {
-                    collectedIds.push({list_create_listid:playlist.list_create_listid, listid:playlist.listid});
+                    collectedIds.push({
+                        list_create_listid: playlist.list_create_listid, 
+                        listid: playlist.listid
+                    });
                 }
             });
             localStorage.setItem('collectedPlaylists', JSON.stringify(collectedIds));
