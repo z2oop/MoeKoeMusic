@@ -19,7 +19,8 @@ jobs:
           fetch-depth: 0
       
       - name: Get latest tag
-        run: echo "Latest tag: $(git tag --sort=-v:refname | head -n 1)"
+        run: |
+          echo "Latest tag: $(git tag --sort=-v:refname | head -n 1)"
           
       - name: Calculate next version
         id: set-version
