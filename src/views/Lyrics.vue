@@ -78,12 +78,9 @@
                         :style="currentLineStyle"
                         :class="{ 'hovering': isHovering && !isLocked }"
                     >
-                        <span
-                            v-for="(segment, index) in lyrics[displayedLines[0]]?.characters"
-                            :key="`line1-${index}`"
-                            class="character"
-                            :style="getSegmentStyle(segment)"
-                        >{{ segment.char }}</span>
+                        <span class="lyrics-text" :style="getLineHighlightStyle(displayedLines[0])">
+                            {{ lyrics[displayedLines[0]]?.text || '' }}
+                        </span>
                     </div>
                 </div>
                 <div class="lyrics-line" v-if="lyrics[displayedLines[0]]?.translated">
@@ -93,12 +90,9 @@
                 </div>
                 <div class="lyrics-line" v-else-if="lyrics[displayedLines[1]]">
                     <div class="lyrics-content" :class="{ 'hovering': isHovering && !isLocked }">
-                        <span
-                            v-for="(segment, index) in lyrics[displayedLines[1]].characters"
-                            :key="`line2-${index}`"
-                            class="character"
-                            :style="getSegmentStyle(segment)"
-                        >{{ segment.char }}</span>
+                        <span class="lyrics-text" :style="getLineHighlightStyle(displayedLines[1])">
+                            {{ lyrics[displayedLines[1]]?.text || '' }}
+                        </span>
                     </div>
                 </div>
             </template>
@@ -225,8 +219,18 @@ const startDrag = (event) => {
 // 检查鼠标是否在交互区域
 const checkMousePosition = (event) => {
     if (isLocked.value) {
-        const isMouseInControls = event.target.closest('.lock-button') !== null
-        window.electron.ipcRenderer.send('set-ignore-mouse-events', !isMouseInControls)
+        // 检查鼠标是否在歌词文本上或控制按钮上
+        const isMouseOnLyrics = event.target.closest('.lyrics-content') !== null
+        const isMouseInControls = event.target.closest('.controls-overlay') !== null || event.target.closest('.lock-button') !== null
+        
+        // 当鼠标在歌词文本上或者在控制按钮上时，显示控制按钮
+        if (isMouseOnLyrics || isMouseInControls) {
+            document.querySelector('.controls-overlay')?.classList.add('show-locked-controls')
+        } else {
+            document.querySelector('.controls-overlay')?.classList.remove('show-locked-controls')
+        }
+        
+        window.electron.ipcRenderer.send('set-ignore-mouse-events', !(isMouseInControls || isMouseOnLyrics))
         return
     }
     
@@ -242,12 +246,12 @@ const checkMousePosition = (event) => {
         event.clientY <= rect.bottom
     )
     
-    // 检查鼠标是否在歌词文本上
+    // 检查鼠标是否在歌词文本上或控制栏上
     const isMouseOnLyrics = event.target.closest('.lyrics-content') !== null
     const isMouseInControls = event.target.closest('.controls-overlay') !== null
     
-    // 如果鼠标在歌词文本上，激活悬停状态
-    if (isMouseOnLyrics && !isLocked.value) {
+    // 如果鼠标在歌词文本上或控制栏上，激活悬停状态
+    if ((isMouseOnLyrics || isMouseInControls) && !isLocked.value) {
         isHovering.value = true
     }
     
@@ -261,10 +265,12 @@ const checkMousePosition = (event) => {
 }
 
 window.electron.ipcRenderer.on('lyrics-data', (data) => {
-    if (data.currentTime < 1) lyrics.value = data.lyricsData;
+    if (data.currentTime < 1) {
+        lyrics.value = processLyricsData(data.lyricsData);
+    }
     else if (data.lyricsData.length && data.currentSongHash != currentSongHash) {
         currentSongHash = data.currentSongHash
-        lyrics.value = data.lyricsData;
+        lyrics.value = processLyricsData(data.lyricsData);
         currentLineIndex.value = 0;
         currentTime.value = 0;
         currentLineScrollX.value = 0;
@@ -273,6 +279,17 @@ window.electron.ipcRenderer.on('lyrics-data', (data) => {
     currentTime.value = data.currentTime * 1000;
     updateCurrentLineIndex();
 })
+
+// 处理歌词数据，添加完整的文本
+const processLyricsData = (lyricsData) => {
+    return lyricsData.map(line => {
+        if (line.characters && line.characters.length) {
+            // 为每行添加完整文本
+            line.text = line.characters.map(char => char.char).join('');
+        }
+        return line;
+    });
+}
 
 window.electron.ipcRenderer.on('playing-status', (playing)=>{
     isPlaying.value = !!playing
@@ -322,22 +339,47 @@ const containerStyle = computed(() => ({
     fontSize: `${fontSize.value}px`
 }))
 
-// 获取段落样式
-const getSegmentStyle = (segment) => {
-    const startTime = segment.startTime
-    const endTime = segment.endTime
-    const progress = (currentTime.value - startTime) / (endTime - startTime)
+// 获取行高亮样式
+const getLineHighlightStyle = (lineIndex) => {
+    if (!lyrics.value[lineIndex] || !lyrics.value[lineIndex].characters || !lyrics.value[lineIndex].characters.length) {
+        return { color: defaultColor.value };
+    }
     
-    let fillPercent = 0
-    if (currentTime.value < startTime) fillPercent = 0
-    else if (currentTime.value >= endTime) fillPercent = 100
-    else fillPercent = Math.max(0, Math.min(100, progress * 100))
+    const line = lyrics.value[lineIndex];
+    const characters = line.characters;
+    const text = line.text || '';
+    
+    // 计算当前高亮的字符位置
+    let highlightPosition = 0;
+    let totalWidth = 100;
+    
+    for (let i = 0; i < characters.length; i++) {
+        const char = characters[i];
+        const startTime = char.startTime;
+        const endTime = char.endTime;
+        
+        // 如果当前时间在这个字符的时间范围内
+        if (currentTime.value >= startTime && currentTime.value <= endTime) {
+            const progress = (currentTime.value - startTime) / (endTime - startTime);
+            const charWidth = 1 / text.length * 100;
+            highlightPosition = (i / text.length * 100) + (progress * charWidth);
+            break;
+        }
+        
+        // 如果已经过了这个字符的时间
+        if (currentTime.value > endTime) {
+            highlightPosition = (i + 1) / text.length * 100;
+        }
+    }
     
     return {
-        backgroundSize: '200% 100%',
-        backgroundPosition: `${100 - fillPercent}% 0`,
-        backgroundImage: `linear-gradient(to right, ${highlightColor.value} 50%, ${defaultColor.value} 50%)`,
-    }
+        background: `linear-gradient(to right, ${highlightColor.value} ${highlightPosition}%, ${defaultColor.value} ${highlightPosition}%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        color: 'transparent',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+        fontWeight: 'bold',
+    };
 }
 </script>
 
@@ -348,13 +390,12 @@ html {
 }
 </style>
 <style scoped>
-.character {
+.lyrics-text {
     display: inline-block;
     position: relative;
     background-clip: text;
     -webkit-background-clip: text;
     font-weight: bold;
-    background-image: linear-gradient(to right, #ff0000, #00ff00);
     color: transparent;
     transform: translateZ(0);
     will-change: background-position;
@@ -380,7 +421,7 @@ html {
     height: auto;
     transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     transform: translateZ(0); 
-    margin: 8px;
+    margin: 8px; /* 移出事件和窗口缩放冲突，暂未解决*/
     padding: 8px 0;
     overflow: hidden;
 }
@@ -410,9 +451,18 @@ html {
     height: 40px;
     position: relative;
     z-index: 10;
+    pointer-events: auto; /* 确保控制栏可以接收鼠标事件 */
 }
 
 .lyrics-container.hovering .controls-overlay {
+    opacity: 1;
+}
+
+.lyrics-container.locked .controls-overlay {
+    opacity: 0;
+}
+
+.lyrics-container.locked .controls-overlay.show-locked-controls {
     opacity: 1;
 }
 
@@ -441,9 +491,11 @@ html {
 }
 
 .controls-wrapper.locked-controls {
-    background: none;
-    padding: 0;
+    background: rgba(30, 30, 30, 0.75);
+    padding: 6px;
     width: auto;
+    min-width: auto;
+    border-radius: 50%;
 }
 
 .controls-wrapper button {
