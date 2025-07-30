@@ -1,7 +1,7 @@
 <template>
     <div class="library-page">
         <div class="profile-section">
-            <div class="profile-header" :style="userDetail.bg_pic ? `background-image: url(${userDetail.bg_pic})` : 'background-image: url(./assets/images/banner.png)'">
+            <div class="profile-header" :style="`background-image: url(${userDetail.bg_pic || './assets/images/banner.png'})`">
                 <div class="profile-info">
                     <img class="profile-pic" :src="user.pic" :alt="$t('yong-hu-tou-xiang')" />
                     <div class="user-details">
@@ -386,6 +386,7 @@ const getVip = async () => {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: visible;
+    transition: background-image 1s ease-in-out;
 }
 
 .profile-info {
