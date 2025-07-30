@@ -17,6 +17,7 @@ test
 bin/*
 
 # Editor directories and files
+.codebuddy/*
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -29,4 +30,4 @@ bin/*
 dev-dist/*
 pnpm-lock.yaml
 pnpm-workspace.yaml
-vite.config.js.timestamp-1752143671651-583c1415843e6.mjs
+vite.config.js*

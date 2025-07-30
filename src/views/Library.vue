@@ -1,7 +1,7 @@
 <template>
     <div class="library-page">
         <div class="profile-section">
-            <div class="profile-header" :style="userDetail.bg_pic ? `background-image: url(${userDetail.bg_pic})` : 'background-image: url(https://random.MoeJue.cn/randbg.php)'">
+            <div class="profile-header" :style="userDetail.bg_pic ? `background-image: url(${userDetail.bg_pic})` : 'background-image: url(./assets/images/banner.png)'">
                 <div class="profile-info">
                     <img class="profile-pic" :src="user.pic" :alt="$t('yong-hu-tou-xiang')" />
                     <div class="user-details">
@@ -375,7 +375,7 @@ const getVip = async () => {
 
 .profile-header {
     width: 100%;
-    height: 180px; 
+    height: 100%; 
     background-size: cover;
     background-position: center;
     border-radius: 15px;
