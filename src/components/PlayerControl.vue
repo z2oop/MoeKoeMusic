@@ -233,7 +233,7 @@ const updateCurrentTime = throttle(() => {
     }
 
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
-    if (audio && lyricsData.value.length) {
+    if (audio && (lyricsData.value.length || isLyrics === false)) {
         if (savedConfig?.lyricsAlign != lyricsAlign.value) lyricsAlign.value = savedConfig.lyricsAlign;
 
         highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
@@ -262,6 +262,7 @@ const updateCurrentTime = throttle(() => {
             }
         }
     } else if (isElectron() && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
+        if(isLyrics === false) return;
         getCurrentLyrics();
     }
 
@@ -334,8 +335,11 @@ const restoreLyricsScroll = throttle(() => {
 }, 1000);
 
 // 获取歌词的节流函数
-const getCurrentLyrics = throttle(() => {
-    if (currentSong.value.hash) getLyrics(currentSong.value.hash);
+let isLyrics;
+const getCurrentLyrics = throttle(async() => {
+    if (currentSong.value.hash) {
+        isLyrics = await getLyrics(currentSong.value.hash);
+    }
 }, 1000);
 
 // 计算属性
