@@ -75,7 +75,7 @@ export default function useLyricsHandler(t) {
                         const cleanedCode = languageCode.replace(/[^A-Za-z0-9+/=]/g, '');
                         // 添加缺失的填充字符
                         const paddedCode = cleanedCode.padEnd(cleanedCode.length + (4 - cleanedCode.length % 4) % 4, '=');
-                        const decodedData = atob(paddedCode);
+                        const decodedData = decodeURIComponent(escape(atob(paddedCode)));
                         const languageData = JSON.parse(decodedData);
 
                         // 获取翻译歌词 (type === 1)
