@@ -75,7 +75,13 @@ export function createWindow() {
         mainWindow.loadURL('http://localhost:8080');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        if(savedConfig?.networkMode == 'devnet'){ //开发网
+            mainWindow.loadURL('http://localhost:8080');
+        }else if(savedConfig?.networkMode == 'testnet'){ //测试网
+            mainWindow.loadURL('https://app.testnet.music.moekoe.cn');
+        }else{ //主网
+            mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        }
     }
 
     mainWindow.webContents.on('dom-ready', () => {
@@ -225,7 +231,7 @@ export function createTray(mainWindow, title = '') {
             label: '项目主页',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/home.png') : path.join(process.resourcesPath, 'icons', 'menu', 'home.png'),
             click: () => {
-                shell.openExternal('https://github.com/iAJue/');
+                shell.openExternal('https://Music.MoeKoe.cn');
             }
         },
         {
