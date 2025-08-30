@@ -9,6 +9,7 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { checkForUpdates } from './updater.js';
 import { Notification } from 'electron';
+import extensionManager from './extensionManager.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -83,6 +84,10 @@ export function createWindow() {
             mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
         }
     }
+
+    mainWindow.webContents.once('dom-ready', () => {
+        extensionManager.loadChromeExtensions();
+    });
 
     mainWindow.webContents.on('dom-ready', () => {
         console.log('DOM Ready');
