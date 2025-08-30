@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Chrome 插件管理 - 根据环境选择正确的路径
 const EXTENSIONS_DIR = !isDev
-    ? path.join(process.resourcesPath, 'plugins', 'extensions')
+    ? path.join(process.resourcesPath, '..' ,'plugins', 'extensions')
     : path.join(__dirname, '../plugins/extensions');
 
 /**
