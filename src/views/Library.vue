@@ -79,19 +79,27 @@
         <!-- 音乐卡片网格（显示歌单或关注的歌手） -->
         <div class="music-grid">
             <template v-if="selectedCategory === 0 || selectedCategory === 1 || selectedCategory === 2">
-                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button" @click="goToCloudDrive">
-                    <img :src="`./assets/images/cloud-disk.png`" class="album-image" />
-                    <div class="album-info">
-                        <h3>我的云盘</h3>
-                        <p>(*/ω＼*)</p>
-                    </div>
+                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button">
+                    <router-link :to="{
+                        path: '/CloudDrive'
+                    }">
+                        <img :src="`./assets/images/cloud-disk.png`" class="album-image" />
+                        <div class="album-info">
+                            <h3>我的云盘</h3>
+                            <p>(*/ω＼*)</p>
+                        </div>
+                    </router-link>
                 </div>
-                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button" @click="goToLocalMusic">
-                    <img :src="`./assets/images/local-music.png`" class="album-image" />
-                    <div class="album-info">
-                        <h3>本地音乐</h3>
-                        <p>(〃'▽'〃)</p>
-                    </div>
+                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button">
+                    <router-link :to="{
+                        path: '/LocalMusic'
+                    }">
+                        <img :src="`./assets/images/local-music.png`" class="album-image" />
+                        <div class="album-info">
+                            <h3>本地音乐</h3>
+                            <p>(〃'▽'〃)</p>
+                        </div>
+                    </router-link>
                 </div>
                 <div class="music-card"
                     v-for="(item, index) in (selectedCategory === 0 ? userPlaylists : selectedCategory === 1 ? collectedPlaylists : collectedAlbums)"
@@ -108,10 +116,10 @@
                         </div>
                     </router-link>
                 </div>
-                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button" @click="createPlaylist">
+                <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button">
                     <i class="fas fa-plus"></i>
-                    <img :src="`./assets/images/ti111mg.png`" class="album-image" />
-                    <div class="album-info">
+                    <img :src="`./assets/images/ti111mg.png`" class="album-image" @click="createPlaylist"/>
+                    <div class="album-info" @click="createPlaylist">
                         <h3>{{ $t('chuang-jian-ge-dan') }}</h3>
                         <p>(≧∀≦)♪</p>
                     </div>
@@ -318,14 +326,6 @@ const createPlaylist = async () => {
             window.$modal.alert(t('chuang-jian-shi-bai'));
         }
     }
-}
-
-const goToCloudDrive= () => {
-    router.push('/CloudDrive');
-}
-
-const goToLocalMusic= () => {
-    router.push('/LocalMusic');
 }
 
 const goToArtistDetail = (artist) => {
