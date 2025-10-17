@@ -37,7 +37,7 @@
                 </div>
             </div>
         </div>
-        <h2 class="section-title" style="margin-bottom: 0px;">{{ $t('wo-xi-huan-ting') }}</h2>
+        <h2 class="section-title" @click="addAllSongsToQueue">{{ $t('wo-xi-huan-ting') }}</h2>
         <div class="favorite-section">
             <div class="song-list">
                 <div v-if="isLoading" class="skeleton-loader">
@@ -358,6 +358,15 @@ const getVip = async () => {
         window.$modal.alert('获取VIP失败, 一天仅限一次');
     }
 }
+const addAllSongsToQueue = () => {
+    props.playerControl.addPlaylistToQueue(listenHistory.value.map(song => ({
+        hash: song.hash,
+        name: song.name,
+        cover: song.image?.replace("{size}", 480).replace('http://', 'https://'),
+        author: song.author_name,
+        timelen: song.duration
+    })));
+};
 </script>
 
 <style scoped>
@@ -387,6 +396,9 @@ const getVip = async () => {
     font-weight: bold;
     margin-bottom: 30px;
     color: var(--primary-color);
+    cursor: cell;
+    margin-bottom: 0px;
+    display: inline-block;
 }
 
 .profile-section {
