@@ -1,0 +1,9 @@
+{
+  "appId": "cn.MoeKoe.Music",
+  "appName": "MoeKoe Music",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "packageName": "cn.MoeKoe.Music"
+  }
+}
