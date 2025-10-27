@@ -1,24 +1,55 @@
-name: Build Android
+name: Build Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+    paths:
+      - "src/**/*"
+      - "api/**/*"
+      - "package.json"
+      - "api/package.json"
+      - ".github/workflows/build-android.yml"
+  workflow_dispatch:  # 支持手动触发
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - name: Install dependencies
-        run: npm run install-all
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install API dependencies
+        run: cd api && npm install
+
       - name: Build API for Android
         run: npm run build:api:android
-      - name: Build Android package
+
+      - name: Build frontend (Vite)
+        run: npm run build
+
+      - name: Build Android APK
         run: npm run electron:build:android
-      - name: Upload Android artifact
+        env:
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoeKoe-Music-Android-APK
+          path: dist_electron/*.apk
+
+      - name: Create GitHub Release (if tag exists)
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: ./dist_electron/*.apk
+          files: dist_electron/*.apk
+          name: Release ${{ github.ref_name }} (Android)
+          generate_release_notes: true
