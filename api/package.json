@@ -9,8 +9,7 @@
     "pkgwin": "pkg . -t node18-win-x64 -C GZip -o bin/app_win --no-bytecode",
     "pkglinux": "pkg . -t node18-linux-x64 -C GZip -o bin/app_linux --no-bytecode",
     "pkglinux-aarch64": "pkg . -t node18-linux-arm64 -C GZip -o bin/app_linux_aarch64 --no-bytecode",
-    "pkgmacos": "pkg . -t node18-macos-x64,node18-macos-arm64 -C GZip -o bin/app_macos --no-bytecode",
-    "pkgandroid": "pkg . -t node18-android-arm64 -C GZip -o bin/app_android --no-bytecode"
+    "pkgmacos": "pkg . -t node18-macos-x64,node18-macos-arm64 -C GZip -o bin/app_macos --no-bytecode"
   },
   "dependencies": {
     "axios": "^1.7.7",
