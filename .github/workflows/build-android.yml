@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js 20 (with latest npm)
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -29,11 +29,9 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             api/package-lock.json
-      - name: Upgrade npm to latest version
-        run: npm install -g npm@latest  # 确保 npm 版本 ≥7.1，支持 set-script
 
-      # 修复：用升级后的 npm 配置 Capacitor 脚本
-      - name: Install dependencies & configure Capacitor
+      # 核心修复：手动修改 package.json 添加 Capacitor 脚本，不依赖 set-script
+      - name: Install dependencies & add Capacitor script manually
         run: |
           npm cache clean --force
           rm -rf node_modules package-lock.json
@@ -43,9 +41,14 @@ jobs:
           npm install @capacitor/cli@^6.1.0 @capacitor/core@^6.1.0 @capacitor/android@^6.1.0
           # 3. 安装其他依赖
           npm install
-          # 4. 用升级后的 npm 添加 Capacitor 调用脚本
-          npm set-script cap "node node_modules/@capacitor/cli/dist/cap.js"
-          # 5. 验证脚本是否生效
+          # 4. 手动往 package.json 里加 Capacitor 调用脚本（用 jq 工具修改 JSON）
+          jq '.scripts.cap = "node node_modules/@capacitor/cli/dist/cap.js"' package.json > temp.json && mv temp.json package.json
+          # 5. 验证脚本是否添加成功
+          if ! grep -q '"cap": "node node_modules/@capacitor/cli/dist/cap.js"' package.json; then
+            echo "Error: Failed to add Capacitor script to package.json"
+            exit 1
+          fi
+          # 6. 验证 Capacitor 是否可用
           if ! npm run cap -- --version; then
             echo "Error: Capacitor CLI initialization failed"
             exit 1
