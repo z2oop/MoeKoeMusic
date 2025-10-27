@@ -25,6 +25,7 @@
     "pkglinux": "pkg . -t node14-linux-x64 -C GZip -o bin/app_linux --no-bytecode",
     "pkglinux-aarch64": "pkg . -t node14-linux-arm64 -C GZip -o bin/app_linux --no-bytecode",
     "pkgmacos": "pkg . -t node14-macos-x64 -C GZip -o bin/app_macos --no-bytecode"
+    "pkgandroid": "pkg . -t node14-android-arm64 -C GZip -o bin/app_android --no-bytecode"
   },
   "engines": {
     "node": ">=12"
