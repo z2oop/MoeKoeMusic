@@ -16,10 +16,12 @@
     "build:api:linux": "npm run --prefix ./api pkglinux",
     "build:api:linux-aarch64": "npm run --prefix ./api pkglinux-aarch64",
     "build:api:macos": "npm run --prefix ./api pkgmacos",
+    "build:api:android": "npm run --prefix ./api pkgandroid",
     "electron:build:win": "run-s build:api:win \"electron:build -- --win --publish never\"",
     "electron:build:linux": "run-s build:api:linux \"electron:build -- --linux --publish never\"",
     "electron:build:linux-aarch64": "run-s build:api:linux-aarch64 \"electron:build -- --linux --publish never\"",
     "electron:build:macos": "run-s build:api:macos \"electron:build -- --mac --universal --publish never\"",
+    "electron:build:android": "run-s build:api:android \"electron:build -- --android --publish never\"",
     "electron:build": "cross-env NODE_ENV=production electron-builder"
   },
   "engines": {
@@ -131,6 +133,12 @@
       ],
       "category": "Utility",
       "artifactName": "${productName}.${ext}"
+    },
+    "android": {
+      "artifactName": "${productName}-v${version}.apk",
+      "target": "apk",
+      "icon": "build/icons/android-icon.png",
+      "packageName": "cn.MoeKoe.Music"
     }
   },
   "type": "module",
