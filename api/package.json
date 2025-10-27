@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "main": "app.js",
-  "bin": "app.js",  // 新增这一行，指定API入口文件
+  "bin": "app.js",
   "scripts": {
     "start": "node app.js",
     "pkgwin": "pkg . -t node18-win-x64 -C GZip -o bin/app_win --no-bytecode",
