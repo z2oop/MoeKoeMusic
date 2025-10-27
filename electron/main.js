@@ -102,6 +102,22 @@ if (settings?.apiMode === 'on') {
     apiService.start();
 }
 
+const { platform } = require('os');
+const { exec } = require('child_process');
+
+// 启动API（安卓端用nodejs-mobile运行脚本）
+if (platform() === 'android') {
+  const nodePath = require('nodejs-mobile').path;
+  exec(`${nodePath} api/app.js`, (error) => {
+    if (error) console.error('API启动失败:', error);
+  });
+} else {
+  // 桌面端仍使用打包的二进制文件（原逻辑不变）
+  exec('./api/bin/app', (error) => {
+    if (error) console.error('API启动失败:', error);
+  });
+}
+
 // 即将退出
 app.on('before-quit', () => {
     if (mainWindow && !mainWindow.isMaximized()) {
