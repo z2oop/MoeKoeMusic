@@ -4,6 +4,12 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "android": {
-    "packageName": "cn.MoeKoe.Music"
+    "packageName": "cn.MoeKoe.Music",
+    "minSdkVersion": 24,
+    "targetSdkVersion": 34,
+    "allowMixedContent": true
+  },
+  "server": {
+    "cleartext": true
   }
 }
