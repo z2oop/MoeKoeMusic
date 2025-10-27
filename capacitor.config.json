@@ -1,15 +1,12 @@
 {
-  "appId": "cn.MoeKoe.Music",
-  "appName": "MoeKoe Music",
-  "webDir": "dist",
-  "bundledWebRuntime": false,
-  "android": {
-    "packageName": "cn.MoeKoe.Music",
-    "minSdkVersion": 24,
-    "targetSdkVersion": 34,
-    "allowMixedContent": true
-  },
-  "server": {
-    "cleartext": true
-  }
+    "appId": "cn.MoeKoe.Music",
+    "appName": "MoeKoe Music",
+    "webDir": "dist",
+    "bundledWebRuntime": false,
+    "android": {
+        "packageName": "cn.MoeKoe.Music",
+        "minSdkVersion": 24,
+        "targetSdkVersion": 34,
+        "allowMixedContent": true
+    }
 }
